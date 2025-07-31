@@ -1,4 +1,6 @@
+import 'package:car_route/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GlobalTextFormField extends StatelessWidget {
   final TextEditingController textEditingController;
@@ -26,6 +28,11 @@ class GlobalTextFormField extends StatelessWidget {
         decoration: InputDecoration(
           filled: true,
           hintText: hintText,
+          hintStyle: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w400,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
             borderSide: const BorderSide(
