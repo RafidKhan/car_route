@@ -1,4 +1,5 @@
 import 'package:car_route/modules/home_page/controller/state/home_state.dart';
+import 'package:car_route/utils/extenstion.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,5 +24,12 @@ class HomeController extends StateNotifier<HomeState> {
       isButtonEnabled: startLocationController.text.trim().isNotEmpty &&
           destinationLocationController.text.trim().isNotEmpty,
     );
+  }
+
+  Future<void> getLocationFromAddress() async{
+    final currentLocation = await startLocationController.text.trim().getLocationFromAddress();
+    final destinationLocation = await destinationLocationController.text.trim().getLocationFromAddress();
+    currentLocation?.printLog();
+    destinationLocation?.printLog();
   }
 }

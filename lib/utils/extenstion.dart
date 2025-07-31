@@ -1,9 +1,12 @@
+import 'dart:developer';
+
+import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
 
 extension LocationExt on String {
-  Future<Location?> getLocationFromAddress(String address) async {
+  Future<Location?> getLocationFromAddress() async {
     try {
-      List<Location> locations = await locationFromAddress(address);
+      List<Location> locations = await locationFromAddress(this);
       if (locations.isNotEmpty) {
         return locations.first;
       } else {
@@ -11,6 +14,14 @@ extension LocationExt on String {
       }
     } catch (e) {
       return null;
+    }
+  }
+}
+
+extension Print on Object {
+  void printLog() {
+    if (kDebugMode) {
+      log(toString());
     }
   }
 }

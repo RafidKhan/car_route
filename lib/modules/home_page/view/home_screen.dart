@@ -40,10 +40,15 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButton: Consumer(builder: (context, ref, child) {
         final state = ref.watch(homeController);
+        final controller = ref.read(homeController.notifier);
         return FloatingActionButton(
           backgroundColor:
               state.isButtonEnabled ? Colors.lightBlue : Colors.grey,
-          onPressed: state.isButtonEnabled ? () {} : null,
+          onPressed: state.isButtonEnabled
+              ? () {
+                  controller.getLocationFromAddress();
+                }
+              : null,
           child: const Icon(
             Icons.start,
             color: Colors.white,
