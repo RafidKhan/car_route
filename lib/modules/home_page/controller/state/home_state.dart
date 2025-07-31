@@ -1,25 +1,30 @@
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
 
 class HomeState {
-  final Location? currentLocation;
+  final Location? startLocation;
   final Location? destinationLocation;
   final bool isButtonEnabled;
+  final MapController? mapController;
 
   const HomeState({
-    this.currentLocation,
+    this.startLocation,
     this.destinationLocation,
     this.isButtonEnabled = false,
+    this.mapController,
   });
 
   HomeState copyWith({
-    Location? currentLocation,
+    Location? startLocation,
     Location? destinationLocation,
     bool? isButtonEnabled,
+    MapController? mapController,
   }) {
     return HomeState(
-      currentLocation: currentLocation ?? this.currentLocation,
+      startLocation: startLocation ?? this.startLocation,
       destinationLocation: destinationLocation ?? this.destinationLocation,
       isButtonEnabled: isButtonEnabled ?? this.isButtonEnabled,
+      mapController: mapController ?? this.mapController,
     );
   }
 }
