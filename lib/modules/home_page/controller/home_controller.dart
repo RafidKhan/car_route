@@ -85,6 +85,8 @@ class HomeController extends StateNotifier<HomeState> {
       await setDestinationLocation(point);
       // Draw the route
       await drawRoad();
+      // Get road information
+      await getRoadInformation();
     } else {
       // Clear map and reset state
       await state.mapController?.removeLastRoad();
@@ -133,5 +135,37 @@ class HomeController extends StateNotifier<HomeState> {
         roadColor: Colors.blue,
       ),
     );
+  }
+
+  Future<void> getRoadInformation() async {
+    if (state.startLocation == null ||
+        state.destinationLocation == null ||
+        state.mapController == null) {
+      return;
+    }
+
+    final RoadInfo roadInfo = await state.mapController!.drawRoad(
+      state.startLocation!,
+      state.destinationLocation!,
+      roadType: RoadType.car,
+      roadOption: const RoadOption(
+        roadColor: Colors.orangeAccent,
+        roadBorderWidth: 10,
+        roadBorderColor: Colors.deepOrange,
+        roadWidth: 20,
+      ),
+    );
+
+    final double distanceInMiles = (roadInfo.distance ?? 0) * 1000;
+    final distance = "${distanceInMiles.toStringAsFixed(2)} Meters";
+
+    final durationInSeconds = roadInfo.duration ?? 0;
+    final durationInMinutes =
+        double.parse((durationInSeconds / 60).toStringAsFixed(2));
+
+    final time = durationInSeconds <= 60
+        ? "$durationInSeconds Sec"
+        : "$durationInMinutes Min";
+    'result: $distance, $time'.printLog();
   }
 }
