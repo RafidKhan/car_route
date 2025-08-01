@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:location/location.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler/permission_handler.dart'
     as permission_handler;
+import 'package:permission_handler/permission_handler.dart';
 
 final homeController =
     StateNotifierProvider.autoDispose<HomeController, HomeState>(
@@ -15,6 +15,8 @@ final homeController =
 
 class HomeController extends StateNotifier<HomeState> {
   HomeController() : super(const HomeState());
+
+  final TextEditingController searchLocation = TextEditingController();
 
   final Location location = Location();
 
@@ -26,19 +28,17 @@ class HomeController extends StateNotifier<HomeState> {
     });
   }
 
-  // Future<void> getLocationFromAddress() async {
-  //   final currentLocation =
-  //       await startLocationController.text.trim().getLocationFromAddress();
-  //   final destinationLocation = await destinationLocationController.text
-  //       .trim()
-  //       .getLocationFromAddress();
-  //   currentLocation?.printLog();
-  //   destinationLocation?.printLog();
-  //   state = state.copyWith(
-  //     startLocation: currentLocation,
-  //     destinationLocation: destinationLocation,
-  //   );
-  // }
+  Future<void> getLocationFromAddress() async {
+    final currentLocation =
+        await searchLocation.text.trim().getLocationFromAddress();
+    currentLocation?.printLog();
+    await state.mapController?.moveTo(
+      GeoPoint(
+          latitude: currentLocation?.latitude ?? 0,
+          longitude: currentLocation?.longitude ?? 0),
+      animate: true,
+    );
+  }
 
   setMapController(LocationData location) {
     final mapController = MapController(
@@ -74,48 +74,64 @@ class HomeController extends StateNotifier<HomeState> {
   }
 
   void setMapPoint(GeoPoint point) async {
+    // if start location is not set, set it, then check if destination is set
+    // if destination is not set, set it and draw the road
+    // if both are set, clear the map and reset the start location
     if (state.startLocation == null) {
-      state = state.copyWith(startLocation: point);
-      await state.mapController?.addMarker(
-        point,
-        markerIcon: const MarkerIcon(
-          icon: Icon(Icons.location_pin, color: Colors.green, size: 48),
-        ),
-      );
+      // Set the start location
+      await setStartLocation(point);
     } else if (state.destinationLocation == null) {
-      state = state.copyWith(destinationLocation: point);
-      await state.mapController?.addMarker(
-        point,
-        markerIcon: const MarkerIcon(
-          icon: Icon(Icons.flag, color: Colors.red, size: 48),
-        ),
-      );
-
+      // Set the destination location
+      await setDestinationLocation(point);
       // Draw the route
-      await state.mapController?.drawRoad(
-        state.startLocation!,
-        state.destinationLocation!,
-        roadType: RoadType.car,
-        roadOption: const RoadOption(
-          roadColor: Colors.blue,
-        ),
-      );
+      await drawRoad();
     } else {
       // Clear map and reset state
       await state.mapController?.removeLastRoad();
-
-      // Set new start point
-      state = state.copyWith(startLocation: point);
-
+      if (state.startLocation != null) {
+        // Remove the previous start location marker
+        await state.mapController?.removeMarker(state.startLocation!);
+      }
+      if (state.destinationLocation != null) {
+        // Remove the previous destination location marker
+        await state.mapController?.removeMarker(state.destinationLocation!);
+      }
       // Remove the previous destination location
       state = state.removeDestinationLocation();
 
-      await state.mapController?.addMarker(
-        point,
-        markerIcon: const MarkerIcon(
-          icon: Icon(Icons.location_pin, color: Colors.green, size: 48),
-        ),
-      );
+      // Set the new start location
+      await setStartLocation(point);
     }
+  }
+
+  Future<void> setStartLocation(GeoPoint point) async {
+    state = state.copyWith(startLocation: point);
+    await state.mapController?.addMarker(
+      point,
+      markerIcon: const MarkerIcon(
+        icon: Icon(Icons.location_pin, color: Colors.green, size: 48),
+      ),
+    );
+  }
+
+  Future<void> setDestinationLocation(GeoPoint point) async {
+    state = state.copyWith(destinationLocation: point);
+    await state.mapController?.addMarker(
+      point,
+      markerIcon: const MarkerIcon(
+        icon: Icon(Icons.flag, color: Colors.red, size: 48),
+      ),
+    );
+  }
+
+  Future<void> drawRoad() async {
+    await state.mapController?.drawRoad(
+      state.startLocation!,
+      state.destinationLocation!,
+      roadType: RoadType.car,
+      roadOption: const RoadOption(
+        roadColor: Colors.blue,
+      ),
+    );
   }
 }

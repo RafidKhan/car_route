@@ -1,4 +1,3 @@
-import 'package:car_route/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -8,6 +7,7 @@ class GlobalTextFormField extends StatelessWidget {
   final int? maxLines;
   final int? maxLength;
   final Function(String)? onChanged;
+  final VoidCallback? onEditingComplete;
 
   const GlobalTextFormField({
     super.key,
@@ -16,6 +16,7 @@ class GlobalTextFormField extends StatelessWidget {
     this.onChanged,
     this.maxLines,
     this.maxLength,
+    this.onEditingComplete,
   });
 
   @override
@@ -23,6 +24,7 @@ class GlobalTextFormField extends StatelessWidget {
     return TextFormField(
         controller: textEditingController,
         onChanged: onChanged,
+        onEditingComplete: onEditingComplete,
         maxLines: maxLines ?? 1,
         maxLength: maxLength,
         decoration: InputDecoration(
