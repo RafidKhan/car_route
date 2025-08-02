@@ -232,23 +232,21 @@ class HomeController extends StateNotifier<HomeState> {
 
     final double distanceInKm = (roadInfo.distance ?? 0);
     final distance = formattedDistance(distanceInKm);
+    debugPrint("time is: ${roadInfo.duration}");
 
-    final durationInSeconds =
-        int.parse((roadInfo.duration ?? 0).toString()).ceil();
-
-    final duration = Duration(seconds: durationInSeconds);
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
+    final durationInSeconds = (roadInfo.duration ?? 0).ceil();
 
     String time;
-    if (hours > 0) {
-      time = "${hours}h ${minutes}m";
-    } else if (minutes > 0) {
-      time = "${minutes}m ${seconds}s";
+    if (durationInSeconds < 60) {
+      time = "${durationInSeconds}s";
+    } else if (durationInSeconds < 3600) {
+      final minutes = (durationInSeconds / 60).ceil();
+      time = "${minutes}m";
     } else {
-      time = "${seconds}s";
+      final hours = (durationInSeconds / 3600).ceil();
+      time = "${hours}h";
     }
+
     state = state.copyWith(
       roadInfo: RoadInfoModel(
         time: time,
@@ -261,7 +259,8 @@ class HomeController extends StateNotifier<HomeState> {
         endPointName: await CustomLatLong(
           lat: state.destinationLocation!.latitude,
           long: state.destinationLocation!.longitude,
-        ).getAddressFromLatLng(), //custom extension to get location string from lat long
+        ).getAddressFromLatLng(),
+        //custom extension to get location string from lat long
       ),
     );
   }
