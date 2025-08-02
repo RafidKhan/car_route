@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../global/widgets/global_text.dart';
 import '../controller/home_controller.dart';
+import 'components/feature_intro_screen.dart';
 import 'components/home_map_view.dart';
 import 'components/location_road_info.dart';
 
@@ -22,6 +23,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     final controller = ref.read(homeController.notifier);
     Future(() {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => FeatureIntroSheet(),
+      );
       controller.initMap(context);
     });
   }

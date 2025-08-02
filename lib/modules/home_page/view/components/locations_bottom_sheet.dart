@@ -32,8 +32,8 @@ class LocationsBottomSheet extends StatelessWidget {
                   onSetMap(locations[0]);
                 }
               },
-              icon: const Icon(Icons.map),
-              label: const Text("Set On Map"),
+              icon: const Icon(Icons.map,color: Colors.lightBlue,),
+              label: const GlobalText("Set On Map"),
             ),
           ),
           const SizedBox(height: 16),
