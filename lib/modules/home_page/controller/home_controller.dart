@@ -19,7 +19,9 @@ final homeController =
 );
 
 class HomeController extends StateNotifier<HomeState> {
-  HomeController() : super(const HomeState());
+  HomeController() : super(const HomeState()) {
+    searchLocation.addListener(checkSearchButtonStatus);
+  }
 
   final TextEditingController searchLocation = TextEditingController();
 
@@ -231,13 +233,22 @@ class HomeController extends StateNotifier<HomeState> {
     final double distanceInKm = (roadInfo.distance ?? 0);
     final distance = formattedDistance(distanceInKm);
 
-    final durationInSeconds = roadInfo.duration ?? 0;
-    final durationInMinutes =
-        double.parse((durationInSeconds / 60).toStringAsFixed(2));
+    final durationInSeconds =
+        int.parse((roadInfo.duration ?? 0).toString()).ceil();
 
-    final time = durationInSeconds <= 60
-        ? "$durationInSeconds Sec"
-        : "$durationInMinutes Min";
+    final duration = Duration(seconds: durationInSeconds);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+
+    String time;
+    if (hours > 0) {
+      time = "${hours}h ${minutes}m";
+    } else if (minutes > 0) {
+      time = "${minutes}m ${seconds}s";
+    } else {
+      time = "${seconds}s";
+    }
     state = state.copyWith(
       roadInfo: RoadInfoModel(
         time: time,
@@ -266,5 +277,10 @@ class HomeController extends StateNotifier<HomeState> {
       final distanceInMeters = distanceInKm * 1000;
       return "${distanceInMeters.toStringAsFixed(2)} meters";
     }
+  }
+
+  void checkSearchButtonStatus() {
+    state =
+        state.copyWith(showSearchButton: searchLocation.text.trim().isNotEmpty);
   }
 }

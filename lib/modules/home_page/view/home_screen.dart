@@ -27,7 +27,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (_) => FeatureIntroSheet(),
+        builder: (_) => const FeatureIntroSheet(),
       );
       controller.initMap(context);
     });
@@ -49,22 +49,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const HomeMapView(),
 
           //text input to search location on map(map focuses on that location)
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 20.w,
-              vertical: 10.h,
-            ),
-            child: GlobalTextFormField(
-              textEditingController: controller.searchLocation,
-              hintText: 'Search Location',
-              onEditingComplete: () async {
-                FocusManager.instance.primaryFocus?.unfocus();
-                if (controller.searchLocation.text.trim().isNotEmpty) {
-                  await controller.getLocationFromAddress(context);
-                }
-              },
-            ),
-          ),
+          Consumer(builder: (context, ref, child) {
+            final state = ref.watch(homeController);
+            return Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 20.w,
+                vertical: 10.h,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GlobalTextFormField(
+                      textEditingController: controller.searchLocation,
+                      hintText: 'Search Location',
+                      onEditingComplete: () async {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        if (controller.searchLocation.text.trim().isNotEmpty) {
+                          await controller.getLocationFromAddress(context);
+                        }
+                      },
+                    ),
+                  ),
+                  if (state.showSearchButton) ...[
+                    SizedBox(
+                      width: 10.w,
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        if (controller.searchLocation.text.trim().isNotEmpty) {
+                          await controller.getLocationFromAddress(context);
+                        }
+                      },
+                      child: const Icon(Icons.search),
+                    ),
+                  ]
+                ],
+              ),
+            );
+          }),
 
           //see location road info
           const LocationRoadInfo(),

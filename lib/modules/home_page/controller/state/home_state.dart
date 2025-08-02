@@ -6,12 +6,14 @@ class HomeState {
   final GeoPoint? destinationLocation;
   final MapController? mapController;
   final RoadInfoModel? roadInfo;
+  final bool showSearchButton;
 
   const HomeState({
     this.startLocation,
     this.destinationLocation,
     this.mapController,
     this.roadInfo,
+    this.showSearchButton=false,
   });
 
   HomeState copyWith({
@@ -19,12 +21,14 @@ class HomeState {
     GeoPoint? destinationLocation,
     MapController? mapController,
     RoadInfoModel? roadInfo,
+    bool? showSearchButton,
   }) {
     return HomeState(
       startLocation: startLocation ?? this.startLocation,
       destinationLocation: destinationLocation ?? this.destinationLocation,
       mapController: mapController ?? this.mapController,
       roadInfo: roadInfo ?? this.roadInfo,
+      showSearchButton: showSearchButton ?? this.showSearchButton,
     );
   }
 
@@ -34,6 +38,7 @@ class HomeState {
       destinationLocation: null,
       mapController: mapController,
       roadInfo: roadInfo,
+      showSearchButton: showSearchButton,
     );
   }
 
@@ -43,6 +48,7 @@ class HomeState {
       destinationLocation: destinationLocation,
       mapController: mapController,
       roadInfo: null,
+      showSearchButton: showSearchButton,
     );
   }
 }
