@@ -10,6 +10,8 @@ import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart'
     as permission_handler;
 import 'package:permission_handler/permission_handler.dart';
+import '../view/components/locations_bottom_sheet.dart';
+import 'package:geocoding/geocoding.dart' as geo;
 
 final homeController =
     StateNotifierProvider.autoDispose<HomeController, HomeState>(
@@ -42,20 +44,62 @@ class HomeController extends StateNotifier<HomeState> {
   }
 
   Future<void> getLocationFromAddress(BuildContext context) async {
-    final currentLocation = await searchLocation.text
+    final locations = await searchLocation.text
         .trim()
-        .getLocationFromAddress(); // custom extension go get Lat Long from input address
-    currentLocation?.printLog();
-    if (currentLocation != null) {
-      await state.mapController?.moveTo(
-        GeoPoint(
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
-        ),
-        animate: true,
+        .getLocationsFromAddress(); // custom extension go get list of location with Lat Long from input address
+    if (locations.isNotEmpty) {
+      searchLocation.clear();
+      showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return LocationsBottomSheet(
+            locations: locations,
+            onSelectLocation: (loc) async {
+              await setMapFocus(loc, true);
+            },
+            onSetMap: (loc) async {
+              await setMapFocus(loc, false);
+            },
+          );
+        },
       );
     } else {
       ViewUtil.showSnackBar(context, "Failed to get location from address");
+    }
+
+    // currentLocation?.printLog();
+    // if (currentLocation != null) {
+    //   await state.mapController?.moveTo(
+    //     GeoPoint(
+    //       latitude: currentLocation.latitude,
+    //       longitude: currentLocation.longitude,
+    //     ),
+    //     animate: true,
+    //   );
+    // } else {
+    //   ViewUtil.showSnackBar(context, "Failed to get location from address");
+    // }
+  }
+
+  Future<void> setMapFocus(
+    geo.Location locationData,
+    bool setLocation,
+  ) async {
+    await state.mapController?.moveTo(
+      GeoPoint(
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+      ),
+      animate: true,
+    );
+
+    if (setLocation) {
+      setMapPoint(
+        GeoPoint(
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+        ),
+      );
     }
   }
 

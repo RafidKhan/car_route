@@ -5,16 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
 
 extension LocationExt on String {
-  Future<Location?> getLocationFromAddress() async {
+  Future<List<Location>> getLocationsFromAddress() async {
     try {
-      List<Location> locations = await locationFromAddress(this);
-      if (locations.isNotEmpty) {
-        return locations.first;
-      } else {
-        return null;
-      }
+      return await locationFromAddress(this);
     } catch (e) {
-      return null;
+      return [];
     }
   }
 }
