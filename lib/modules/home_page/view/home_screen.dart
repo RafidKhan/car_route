@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../global/widgets/global_text.dart';
 import '../controller/home_controller.dart';
 import 'components/home_map_view.dart';
+import 'components/location_road_info.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -57,6 +58,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
           ),
+
+          //see location road info
+          const LocationRoadInfo(),
         ],
       ),
     );

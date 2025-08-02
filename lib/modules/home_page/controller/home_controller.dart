@@ -1,5 +1,6 @@
-import 'package:car_route/modules/global/widgets/global_text.dart';
 import 'package:car_route/modules/home_page/controller/state/home_state.dart';
+import 'package:car_route/modules/home_page/model/custom_lat_long.dart';
+import 'package:car_route/modules/home_page/model/road_info.dart';
 import 'package:car_route/utils/extenstion.dart';
 import 'package:car_route/utils/view_util.dart';
 import 'package:flutter/material.dart';
@@ -106,7 +107,7 @@ class HomeController extends StateNotifier<HomeState> {
 
       onError("Location permission denied.");
     } catch (e) {
-      onError("Error requesting location permission: $e");
+      onError("Error requesting location permission");
     }
   }
 
@@ -120,11 +121,11 @@ class HomeController extends StateNotifier<HomeState> {
     } else if (state.destinationLocation == null) {
       // Set the destination location
       await setDestinationLocation(point);
-      // Draw the route
-      await drawRoad();
-      // Get road information
-      await getRoadInformation();
+      // Draw the route and Get road information
+      await drawRoadAndGetRoadInfo();
     } else {
+      //clear road info
+      clearRoadInfo();
       // Clear map and reset state
       await state.mapController?.removeLastRoad();
       if (state.startLocation != null) {
@@ -163,21 +164,11 @@ class HomeController extends StateNotifier<HomeState> {
     );
   }
 
-  Future<void> drawRoad() async {
-    await state.mapController?.drawRoad(
-      state.startLocation!,
-      state.destinationLocation!,
-      roadType: RoadType.car,
-      roadOption: const RoadOption(
-        roadColor: Colors.blue,
-      ),
-    );
-  }
-
-  Future<void> getRoadInformation() async {
+  Future<void> drawRoadAndGetRoadInfo() async {
     if (state.startLocation == null ||
         state.destinationLocation == null ||
         state.mapController == null) {
+      clearRoadInfo();
       return;
     }
 
@@ -193,8 +184,8 @@ class HomeController extends StateNotifier<HomeState> {
       ),
     );
 
-    final double distanceInMiles = (roadInfo.distance ?? 0) * 1000;
-    final distance = "${distanceInMiles.toStringAsFixed(2)} Meters";
+    final double distanceInKm = (roadInfo.distance ?? 0);
+    final distance = formattedDistance(distanceInKm);
 
     final durationInSeconds = roadInfo.duration ?? 0;
     final durationInMinutes =
@@ -203,6 +194,33 @@ class HomeController extends StateNotifier<HomeState> {
     final time = durationInSeconds <= 60
         ? "$durationInSeconds Sec"
         : "$durationInMinutes Min";
-    'result: $distance, $time'.printLog();
+    state = state.copyWith(
+      roadInfo: RoadInfoModel(
+        time: time,
+        distance: distance,
+        startPointName: await CustomLatLong(
+          lat: state.startLocation!.latitude,
+          long: state.startLocation!.longitude,
+        ).getAddressFromLatLng(),
+        //custom extension to get location string from lat long
+        endPointName: await CustomLatLong(
+          lat: state.destinationLocation!.latitude,
+          long: state.destinationLocation!.longitude,
+        ).getAddressFromLatLng(), //custom extension to get location string from lat long
+      ),
+    );
+  }
+
+  void clearRoadInfo() {
+    state = state.removeRoadInfo();
+  }
+
+  String formattedDistance(double distanceInKm) {
+    if (distanceInKm >= 1) {
+      return "${distanceInKm.toStringAsFixed(2)} km";
+    } else {
+      final distanceInMeters = distanceInKm * 1000;
+      return "${distanceInMeters.toStringAsFixed(2)} meters";
+    }
   }
 }
