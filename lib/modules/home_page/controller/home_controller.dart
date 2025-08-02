@@ -1,5 +1,7 @@
+import 'package:car_route/modules/global/widgets/global_text.dart';
 import 'package:car_route/modules/home_page/controller/state/home_state.dart';
 import 'package:car_route/utils/extenstion.dart';
+import 'package:car_route/utils/view_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,34 +22,52 @@ class HomeController extends StateNotifier<HomeState> {
 
   final Location location = Location();
 
-  Future<void> initMap() async {
-    await checkPermission(onSuccess: () async {
-      final currentLocation = await location.getLocation();
-
-      setMapController(currentLocation);
-    });
-  }
-
-  Future<void> getLocationFromAddress() async {
-    final currentLocation =
-        await searchLocation.text.trim().getLocationFromAddress();
-    currentLocation?.printLog();
-    await state.mapController?.moveTo(
-      GeoPoint(
-          latitude: currentLocation?.latitude ?? 0,
-          longitude: currentLocation?.longitude ?? 0),
-      animate: true,
+  Future<void> initMap(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+    await requestLocationPermission(
+      onSuccess: () async {
+        await setMapController(context);
+      },
+      onError: (error) {
+        Navigator.pop(context);
+        ViewUtil.showSnackBar(context, error);
+      },
     );
   }
 
-  setMapController(LocationData location) {
+  Future<void> getLocationFromAddress(BuildContext context) async {
+    final currentLocation = await searchLocation.text
+        .trim()
+        .getLocationFromAddress(); // custom extension go get Lat Long from input address
+    currentLocation?.printLog();
+    if (currentLocation != null) {
+      await state.mapController?.moveTo(
+        GeoPoint(
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        ),
+        animate: true,
+      );
+    } else {
+      ViewUtil.showSnackBar(context, "Failed to get location from address");
+    }
+  }
+
+  Future<void> setMapController(BuildContext context) async {
+    final currentLocation = await location.getLocation();
     final mapController = MapController(
       initPosition: GeoPoint(
-        latitude: location.latitude ?? 0,
-        longitude: location.longitude ?? 0,
+        latitude: currentLocation.latitude ?? 0,
+        longitude: currentLocation.longitude ?? 0,
       ),
     );
     state = state.copyWith(mapController: mapController);
+    Navigator.pop(context);
 
     state.mapController?.listenerMapSingleTapping.addListener(() async {
       final tappedPoint = state.mapController?.listenerMapSingleTapping.value;
@@ -57,20 +77,37 @@ class HomeController extends StateNotifier<HomeState> {
     });
   }
 
-  Future<void> checkPermission({required VoidCallback onSuccess}) async {
-    bool serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) return;
-    }
+  Future<void> requestLocationPermission({
+    required Function() onSuccess,
+    required Function(String errorMessage) onError,
+  }) async {
+    try {
+      var status = await Permission.location.status;
 
-    var permissionStatus = await permission_handler.Permission.location.status;
-    if (permissionStatus.isDenied || permissionStatus.isRestricted) {
-      permissionStatus = await permission_handler.Permission.location.request();
-      if (!permissionStatus.isGranted) return;
-    }
+      if (status.isGranted) {
+        // Permission already granted
+        onSuccess();
+        return;
+      }
 
-    onSuccess.call();
+      if (status.isDenied || status.isRestricted || status.isLimited) {
+        // Request permission
+        status = await Permission.location.request();
+        if (status.isGranted) {
+          onSuccess();
+          return;
+        } else if (status.isPermanentlyDenied) {
+          onError(
+              "Location permission permanently denied. Please enable it from settings.");
+          await openAppSettings();
+          return;
+        }
+      }
+
+      onError("Location permission denied.");
+    } catch (e) {
+      onError("Error requesting location permission: $e");
+    }
   }
 
   void setMapPoint(GeoPoint point) async {

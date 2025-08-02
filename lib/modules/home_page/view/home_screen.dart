@@ -21,7 +21,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     final controller = ref.read(homeController.notifier);
     Future(() {
-      controller.initMap();
+      controller.initMap(context);
     });
   }
 
@@ -39,26 +39,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Stack(
         children: [
           const HomeMapView(),
-          Consumer(builder: (context, ref, child) {
-            final state = ref.watch(homeController);
-            final controller = ref.read(homeController.notifier);
-            return Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 20.w,
-                vertical: 10.h,
-              ),
-              child: GlobalTextFormField(
-                textEditingController: controller.searchLocation,
-                hintText: 'Search Location',
-                onEditingComplete: () async {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  if (controller.searchLocation.text.trim().isNotEmpty) {
-                    await controller.getLocationFromAddress();
-                  }
-                },
-              ),
-            );
-          }),
+
+          //text input to search location on map(map focuses on that location)
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: 20.w,
+              vertical: 10.h,
+            ),
+            child: GlobalTextFormField(
+              textEditingController: controller.searchLocation,
+              hintText: 'Search Location',
+              onEditingComplete: () async {
+                FocusManager.instance.primaryFocus?.unfocus();
+                if (controller.searchLocation.text.trim().isNotEmpty) {
+                  await controller.getLocationFromAddress(context);
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
