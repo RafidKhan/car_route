@@ -62,7 +62,7 @@ Ensure the following permissions are added to your `AndroidManifest.xml` to enab
 
 1. **Clone the repo**
    ```bash
-   git clone https://github.com/yourusername/car_route.git
+   git clone https://github.com/RafidKhan/car_route
    cd car_route
    ```
 
