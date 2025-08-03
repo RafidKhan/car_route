@@ -38,6 +38,7 @@
 | `flutter_osm_plugin`  | OpenStreetMap integration              |
 | `flutter_riverpod`    | State management                       |
 | `geocoding`           | Reverse geocoding (lat/long to address)|
+| `location`            | For getting user's current location    |
 | `flutter_screenutil`  | Responsive layout                      |
 
 > _Note: All dependencies are defined in `pubspec.yaml`_
