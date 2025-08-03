@@ -68,19 +68,6 @@ class HomeController extends StateNotifier<HomeState> {
     } else {
       ViewUtil.showSnackBar(context, "Failed to get location from address");
     }
-
-    // currentLocation?.printLog();
-    // if (currentLocation != null) {
-    //   await state.mapController?.moveTo(
-    //     GeoPoint(
-    //       latitude: currentLocation.latitude,
-    //       longitude: currentLocation.longitude,
-    //     ),
-    //     animate: true,
-    //   );
-    // } else {
-    //   ViewUtil.showSnackBar(context, "Failed to get location from address");
-    // }
   }
 
   Future<void> setMapFocus(
@@ -195,7 +182,7 @@ class HomeController extends StateNotifier<HomeState> {
     await state.mapController?.addMarker(
       point,
       markerIcon: const MarkerIcon(
-        icon: Icon(Icons.location_pin, color: Colors.green, size: 48),
+        icon: Icon(Icons.navigation, color: Colors.green, size: 48),
       ),
     );
   }
